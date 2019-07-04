@@ -36,6 +36,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
   String title; // title for the transaction
   String description; // description for the transaction
   String transactionType; // chosen transaction type from the dropdown
+  String dateAndTime = 'Add Date & Time';
 
   WalletModel currentChosenWallet;
 
@@ -128,6 +129,9 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
 
   @override
   Widget build(BuildContext context) {
+    
+    
+
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListView(
@@ -215,6 +219,60 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
 
           FlatButton(
             color: Theme.of(context).primaryColor,
+              child: Text(this.dateAndTime,
+              style: TextStyle(color: Colors.white),
+            ),
+            onPressed: (){
+              Future<DateTime> selectedDate = showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(2018),
+                lastDate: DateTime(2030),
+                builder: (BuildContext context, Widget child) {
+                  return Theme(
+                    data: Theme.of(context),
+                    child: child,
+                  );
+                },
+              );
+
+              selectedDate.then((onValue){
+                setState(() {
+                  dateAndTime = '${onValue.year}-${onValue.month}-${onValue.day}';                
+                });
+                Future<TimeOfDay> selectedTime = showTimePicker(
+                  initialTime: TimeOfDay.now(),
+                  context: context,
+                  builder: (BuildContext context, Widget child){
+                    return Theme(
+                      data: Theme.of(context),
+                      child: child,
+                    );
+                  }
+                );
+                selectedTime.then((onValue){
+                  setState(() {
+                    dateAndTime += ' ';
+                    dateAndTime += '${onValue.hour}:${onValue.minute}';
+                  });
+                });
+              });
+
+              // Future<TimeOfDay> selectedTime = showTimePicker(
+              //   initialTime: TimeOfDay.now(),
+              //   context: context,
+              //   builder: (BuildContext context, Widget child){
+              //     return Theme(
+              //       data: Theme.of(context),
+              //       child: child,
+              //     );
+              //   }
+              // );
+            },
+          ),
+
+          FlatButton(
+            color: Theme.of(context).primaryColor,
             child: Text(
               'Add Transaction',
               style: TextStyle(color: Colors.white),
@@ -234,6 +292,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                   trm.walletId = this.currentChosenWallet.id;
                   trm.categoryId = null;
                   trm.transactionType = this.transactionTypeMap[this.transactionType];
+                  trm.dateTime = this.dateAndTime;
                   DatabaseHelper.instance.insert(trm.getTableName(), trm).then((onValue){
                     Navigator.of(context).pop(true);
                   }).catchError((onError){
