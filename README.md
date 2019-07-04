@@ -1,6 +1,6 @@
 # mywallet
 
-A new Flutter project.
+An open source Expense Tracking Application in Flutter
 
 ## Getting Started
 
