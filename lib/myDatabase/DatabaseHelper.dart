@@ -10,7 +10,7 @@ class DatabaseHelper{
   // This is the actual database filename that is saved in the docs directory.
   static final _databaseName = "MyDatabase.db";
   // Increment this version when you need to change the schema.
-  static final _databaseVersion = 1;
+  static final _databaseVersion = 3;
 
   // Make this a singleton class.
   DatabaseHelper._privateConstructor();
@@ -31,7 +31,7 @@ class DatabaseHelper{
     String path = join(documentsDirectory.path, _databaseName);
     // Open the database. Can also add an onUpdate callback parameter.
     return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate);
+        version: _databaseVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
   }
 
   // SQL string to create the database
@@ -58,6 +58,12 @@ class DatabaseHelper{
       )
   ''');
 
+  }
+
+  void _onUpgrade(Database db, int oldVersion, int newVersion) {
+    if (oldVersion < newVersion) {
+      db.execute("ALTER TABLE Transactions ADD COLUMN dateTime TEXT;");
+    }
   }
 
   Future<int> insert(String tableName, Model model) async {
@@ -104,9 +110,16 @@ class DatabaseHelper{
   // List of plain models would be returned after this method
   // The developer is expected to convert the models into widgets
   // or some other format
-  Future<List<Model>> queryAll(Model model) async{
+  Future<List<Model>> queryAll(Model model, {bool reverse=false}) async{
+    String order = 'ASC';
+    if (reverse){
+      order = 'DESC';
+    }
     Database db = await database;
-    List<Map> maps = await db.query(model.getTableName(), columns: model.getDbColumns());
+    List<Map> maps = await db.query(model.getTableName(),
+    columns: model.getDbColumns(),
+    orderBy: '${model.getDbColumns()[0]} $order'
+    );
     if (maps.length > 0){
       List<Model> models = [];
       maps.forEach((m){

@@ -10,6 +10,7 @@ class TransactionModel implements Model{
   String title;
   String description;
   double amount;
+  String dateTime;
   
   TransactionModel();
 
@@ -23,12 +24,13 @@ class TransactionModel implements Model{
     trm.walletId = map[getDbColumns()[4]];
     trm.categoryId = map[getDbColumns()[5]];
     trm.transactionType = map[getDbColumns()[6]];
+    trm.dateTime = map[getDbColumns()[7]];
     return trm;
   }
 
   @override
   List<String> getDbColumns() {
-    return ['_id', 'title', 'description', 'amount', 'walletId', 'categoryId', 'transactionType'];
+    return ['_id', 'title', 'description', 'amount', 'walletId', 'categoryId', 'transactionType', 'dateTime'];
   }
 
   @override
@@ -46,6 +48,7 @@ class TransactionModel implements Model{
       getDbColumns()[4]: this.walletId,
       getDbColumns()[5]: this.categoryId,
       getDbColumns()[6]: this.transactionType,
+      getDbColumns()[7]: this.dateTime
     };
   }
   

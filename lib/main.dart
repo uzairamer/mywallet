@@ -74,7 +74,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _read() async {
     
-    List<Model> transactionModels = await DatabaseHelper.instance.getNRecords(10, new TransactionModel());
+    // List<Model> transactionModels = await DatabaseHelper.instance.getNRecords(10, new TransactionModel());
+    List<Model> transactionModels = await DatabaseHelper.instance.queryAll(new TransactionModel(), reverse: true);
     // List<Model> transactionModels = await DatabaseHelper.instance.queryAll(new TransactionModel());
     List<WalletModel> wms = new List();
     for (TransactionModel m in transactionModels){
