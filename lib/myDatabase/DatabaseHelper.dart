@@ -10,7 +10,7 @@ class DatabaseHelper{
   // This is the actual database filename that is saved in the docs directory.
   static final _databaseName = "MyDatabase.db";
   // Increment this version when you need to change the schema.
-  static final _databaseVersion = 3;
+  static final _databaseVersion = 4;
 
   // Make this a singleton class.
   DatabaseHelper._privateConstructor();
@@ -31,7 +31,11 @@ class DatabaseHelper{
     String path = join(documentsDirectory.path, _databaseName);
     // Open the database. Can also add an onUpdate callback parameter.
     return await openDatabase(path,
-        version: _databaseVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
+        version: _databaseVersion, onCreate: _onCreate);
+
+        // If you want to want to upgrade the tables using other than increasing
+        // database version
+        // version: _databaseVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
   }
 
   // SQL string to create the database
@@ -54,17 +58,18 @@ class DatabaseHelper{
         amount REAL NOT NULL,
         walletId INTEGER NOT NULL,
         categoryId INTEGER,
-        transactionType INTEGER NOT NULL
+        transactionType INTEGER NOT NULL,
+        dateTime TEXT
       )
   ''');
 
   }
 
-  void _onUpgrade(Database db, int oldVersion, int newVersion) {
-    if (oldVersion < newVersion) {
-      db.execute("ALTER TABLE Transactions ADD COLUMN dateTime TEXT;");
-    }
-  }
+  // void _onUpgrade(Database db, int oldVersion, int newVersion) {
+  //   if (oldVersion < newVersion) {
+  //     db.execute("ALTER TABLE Transactions ADD COLUMN dateTime TEXT;");
+  //   }
+  // }
 
   Future<int> insert(String tableName, Model model) async {
     Database db = await database;

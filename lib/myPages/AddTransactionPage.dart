@@ -307,10 +307,8 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
               }
             },
           ),
-
         ],
       ),
     );
   }
-
 }
