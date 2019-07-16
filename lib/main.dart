@@ -65,6 +65,8 @@ typedef void MyAddWalletCallback();
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> wallets;
   List<Widget> transactionList;
+  List<Model> transactionModels = List();
+  List<WalletModel> wms = List();
   String totalRemainingAmountWithCurrency = "";
 
   void addWalletCallback() {
@@ -74,30 +76,32 @@ class _MyHomePageState extends State<MyHomePage> {
 
   _read() async {
     
-    // List<Model> transactionModels = await DatabaseHelper.instance.getNRecords(10, new TransactionModel());
+    // List<Model> transactionModels = await DatabaseHelper.instance.getNRecords(1, new TransactionModel());
     List<Model> transactionModels = await DatabaseHelper.instance.queryAll(new TransactionModel(), reverse: true);
     // List<Model> transactionModels = await DatabaseHelper.instance.queryAll(new TransactionModel());
-    List<WalletModel> wms = new List();
+    List<WalletModel>wms = new List();
     for (TransactionModel m in transactionModels){
         WalletModel wm = await DatabaseHelper.instance.query(m.walletId, new WalletModel()) as WalletModel;
         wms.add(wm);
     }
-    List<Widget> transactionList = new List();
-    print('Transactions Length: ${transactionModels.length}');
-    if(transactionModels.length>0){
+    // List<Widget> transactionList = new List();
+    // print('Transactions Length: ${transactionModels.length}');
+    // if(transactionModels.length>0){
       
-      for(int i = 0; i < transactionModels.length; ++i){
-        transactionList.add(TransactionListItem(trm: transactionModels[i] as TransactionModel, wm: wms[i]));
-      }
+    //   for(int i = 0; i < transactionModels.length; ++i){
+    //     transactionList.add(TransactionListItem(trm: transactionModels[i] as TransactionModel, wm: wms[i]));
+    //   }
 
-      // transactionModels.forEach((m)async{
-      //   TransactionModel trm = m as TransactionModel;
-      //   transactionList.add(TransactionListItem(trm: trm, wm: wm,));
-      // });
-    }
+    //   // transactionModels.forEach((m)async{
+    //   //   TransactionModel trm = m as TransactionModel;
+    //   //   transactionList.add(TransactionListItem(trm: trm, wm: wm,));
+    //   // });
+    // }
 
     setState(() {
-      this.transactionList = transactionList;
+      // this.transactionList = transactionList;
+      this.transactionModels = transactionModels;
+      this.wms = wms;
     });
 
     // List of models is returned here and now we need to convert
@@ -242,11 +246,13 @@ class _MyHomePageState extends State<MyHomePage> {
               ],
             ),
           ),
-
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-              child: ListView(children: (this.transactionList == null || this.transactionList.length == 0) ? [Center(child: Text('Transactions will be shown here'))] : this.transactionList),
+              child: ListView.builder(itemCount: this.transactionModels.length, itemBuilder: (BuildContext context, int index){
+                return TransactionListItem(trm: this.transactionModels[index], wm: this.wms[index],);
+              },),
+              // child: ListView(children: (this.transactionList == null || this.transactionList.length == 0) ? [Center(child: Text('Transactions will be shown here'))] : this.transactionList),
             ),
           ),
 
