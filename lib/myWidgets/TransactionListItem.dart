@@ -9,6 +9,7 @@ import '../myDatabase/myModels/WalletModel.dart';
 class TransactionListItem extends StatelessWidget {
   final TransactionModel trm;
   final WalletModel wm;
+  final Function onDelete;
   final List<String> monthNames = const [
     'January',
     'February',
@@ -24,7 +25,8 @@ class TransactionListItem extends StatelessWidget {
     'December'
   ];
 
-  const TransactionListItem({Key key, this.trm, this.wm}) : super(key: key);
+  const TransactionListItem({Key key, this.trm, this.wm, this.onDelete})
+      : super(key: key);
 
   String dateTimeParser(String dateTimeStr) {
     final formatter = DateFormat('yyyy-mm-dd hh:mm');
@@ -39,6 +41,10 @@ class TransactionListItem extends StatelessWidget {
     return result;
   }
 
+  _dismissDialog(BuildContext context) {
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     Color textColor = Theme.of(context).primaryColorDark;
@@ -50,10 +56,37 @@ class TransactionListItem extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) =>
-                    TransactionDetailPage(this.trm, this.wm, dateTime)));
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                TransactionDetailPage(this.trm, this.wm, dateTime),
+          ),
+        );
+      },
+      onLongPress: () {
+        showDialog(
+            context: context,
+            builder: (context) {
+              return SimpleDialog(
+                title: Text('Delete Transaction'),
+                children: <Widget>[
+                  SimpleDialogOption(
+                    child: Text('Delete & Refund to Wallet'),
+                    onPressed: () {
+                      onDelete(trm, true); // refund = true
+                      _dismissDialog(context);
+                    },
+                  ),
+                  SimpleDialogOption(
+                    child: Text('Delete & No Refund'),
+                    onPressed: () {
+                      onDelete(trm, false); // refund = true
+                      _dismissDialog(context);
+                    },
+                  ),
+                ],
+              );
+            });
       },
       child: Card(
         child: Padding(

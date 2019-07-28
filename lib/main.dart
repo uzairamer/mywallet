@@ -75,28 +75,16 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   _read() async {
-    
     // List<Model> transactionModels = await DatabaseHelper.instance.getNRecords(1, new TransactionModel());
-    List<Model> transactionModels = await DatabaseHelper.instance.queryAll(new TransactionModel(), reverse: true);
+    List<Model> transactionModels = await DatabaseHelper.instance
+        .queryAll(new TransactionModel(), reverse: true);
     // List<Model> transactionModels = await DatabaseHelper.instance.queryAll(new TransactionModel());
-    List<WalletModel>wms = new List();
-    for (TransactionModel m in transactionModels){
-        WalletModel wm = await DatabaseHelper.instance.query(m.walletId, new WalletModel()) as WalletModel;
-        wms.add(wm);
+    List<WalletModel> wms = new List();
+    for (TransactionModel m in transactionModels) {
+      WalletModel wm = await DatabaseHelper.instance
+          .query(m.walletId, new WalletModel()) as WalletModel;
+      wms.add(wm);
     }
-    // List<Widget> transactionList = new List();
-    // print('Transactions Length: ${transactionModels.length}');
-    // if(transactionModels.length>0){
-      
-    //   for(int i = 0; i < transactionModels.length; ++i){
-    //     transactionList.add(TransactionListItem(trm: transactionModels[i] as TransactionModel, wm: wms[i]));
-    //   }
-
-    //   // transactionModels.forEach((m)async{
-    //   //   TransactionModel trm = m as TransactionModel;
-    //   //   transactionList.add(TransactionListItem(trm: trm, wm: wm,));
-    //   // });
-    // }
 
     setState(() {
       // this.transactionList = transactionList;
@@ -106,7 +94,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     // List of models is returned here and now we need to convert
     // it into list of widgets
-    List<Model> models = await DatabaseHelper.instance.queryAll(new WalletModel());
+    List<Model> models =
+        await DatabaseHelper.instance.queryAll(new WalletModel());
     List<Widget> walletsMore = [AddWalletWidgetClickable(addWalletCallback)];
 
     double totalAmount = 0.0;
@@ -126,8 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
       wallets = walletsMore;
       totalRemainingAmountWithCurrency = curr + " " + totalAmount.toString();
     });
-
-
   }
 
   @override
@@ -135,6 +122,18 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     wallets = [AddWalletWidgetClickable(addWalletCallback)];
     _read();
+  }
+
+  handleTransactionDelete(TransactionModel tm, bool refund) async {
+    await DatabaseHelper.instance.delete(tm.getTableName(), tm, tm.getId());
+    if (refund) {
+      WalletModel wm =
+          await DatabaseHelper.instance.query(tm.walletId, new WalletModel());
+      wm.initialAmount = wm.initialAmount + tm.amount;
+      await DatabaseHelper.instance.update(wm.getTableName(), wm, wm.id);
+    }
+    _read();
+    // return print('Request to delete transaction with id $transactionId');
   }
 
   @override
@@ -147,13 +146,12 @@ class _MyHomePageState extends State<MyHomePage> {
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.add),
         onPressed: () async {
-          // print('Floating action button pressed');
-          bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
-          if (result){
+          bool result = await Navigator.push(context,
+              MaterialPageRoute(builder: (context) => AddTransactionPage()));
+          if (result) {
             print('Dope');
-            // this.addWalletCallback();
             _read();
-          }else{
+          } else {
             print('It was a fucking no');
           }
         },
@@ -164,7 +162,8 @@ class _MyHomePageState extends State<MyHomePage> {
           Container(
             margin: EdgeInsets.only(top: 5.0),
             height: 100,
-            child: ListView(scrollDirection: Axis.horizontal, children: wallets),
+            child:
+                ListView(scrollDirection: Axis.horizontal, children: wallets),
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),
@@ -221,7 +220,6 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             ),
           ),
-
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: Row(
@@ -248,14 +246,20 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-              child: ListView.builder(itemCount: this.transactionModels.length, itemBuilder: (BuildContext context, int index){
-                return TransactionListItem(trm: this.transactionModels[index], wm: this.wms[index],);
-              },),
+              padding:
+                  const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
+              child: ListView.builder(
+                itemCount: this.transactionModels.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return TransactionListItem(
+                      trm: this.transactionModels[index],
+                      wm: this.wms[index],
+                      onDelete: this.handleTransactionDelete);
+                },
+              ),
               // child: ListView(children: (this.transactionList == null || this.transactionList.length == 0) ? [Center(child: Text('Transactions will be shown here'))] : this.transactionList),
             ),
           ),
-
         ],
       ),
     );

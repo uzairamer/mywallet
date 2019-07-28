@@ -1,7 +1,6 @@
 import './Model.dart';
 
-class TransactionModel implements Model{
-
+class TransactionModel implements Model {
   int walletId;
   int categoryId;
 
@@ -11,11 +10,15 @@ class TransactionModel implements Model{
   String description;
   double amount;
   String dateTime;
-  
+
   TransactionModel();
 
+  int getId() {
+    return this._id;
+  }
+
   @override
-  Model fromMap(Map<String,dynamic> map) {
+  Model fromMap(Map<String, dynamic> map) {
     TransactionModel trm = new TransactionModel();
     trm._id = map[getDbColumns()[0]];
     trm.title = map[getDbColumns()[1]];
@@ -30,7 +33,16 @@ class TransactionModel implements Model{
 
   @override
   List<String> getDbColumns() {
-    return ['_id', 'title', 'description', 'amount', 'walletId', 'categoryId', 'transactionType', 'dateTime'];
+    return [
+      '_id',
+      'title',
+      'description',
+      'amount',
+      'walletId',
+      'categoryId',
+      'transactionType',
+      'dateTime'
+    ];
   }
 
   @override
@@ -51,5 +63,4 @@ class TransactionModel implements Model{
       getDbColumns()[7]: this.dateTime
     };
   }
-  
 }

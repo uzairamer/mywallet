@@ -6,7 +6,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../myDatabase/myModels/Model.dart';
 
-class DatabaseHelper{
+class DatabaseHelper {
   // This is the actual database filename that is saved in the docs directory.
   static final _databaseName = "MyDatabase.db";
   // Increment this version when you need to change the schema.
@@ -33,9 +33,9 @@ class DatabaseHelper{
     return await openDatabase(path,
         version: _databaseVersion, onCreate: _onCreate);
 
-        // If you want to want to upgrade the tables using other than increasing
-        // database version
-        // version: _databaseVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
+    // If you want to want to upgrade the tables using other than increasing
+    // database version
+    // version: _databaseVersion, onCreate: _onCreate, onUpgrade: _onUpgrade);
   }
 
   // SQL string to create the database
@@ -62,7 +62,6 @@ class DatabaseHelper{
         dateTime TEXT
       )
   ''');
-
   }
 
   // void _onUpgrade(Database db, int oldVersion, int newVersion) {
@@ -77,9 +76,16 @@ class DatabaseHelper{
     return id;
   }
 
-  Future<int> update(String tableName, Model model, int rowId) async{
+  Future<int> update(String tableName, Model model, int rowId) async {
     Database db = await database;
-    return await db.update(tableName, model.toMap(), where: "${model.getDbColumns()[0]} = ?", whereArgs: [rowId]);
+    return await db.update(tableName, model.toMap(),
+        where: "${model.getDbColumns()[0]} = ?", whereArgs: [rowId]);
+  }
+
+  Future<int> delete(String tableName, Model model, int rowId) async {
+    Database db = await database;
+    return await db.delete(tableName,
+        where: "${model.getDbColumns()[0]} = ?", whereArgs: [rowId]);
   }
 
   Future<Model> query(int id, Model model) async {
@@ -94,17 +100,19 @@ class DatabaseHelper{
     return null;
   }
 
-  Future<List<Model>> getNRecords(int n, Model model) async{
+  Future<List<Model>> getNRecords(int n, Model model) async {
     Database db = await database;
-    List<Map> maps = await db.query(model.getTableName(),
+    List<Map> maps = await db.query(
+      model.getTableName(),
       columns: model.getDbColumns(),
       orderBy: '${model.getDbColumns()[0]} DESC',
       limit: n,
     );
-    if (maps.length > 0){
-      print('getNRecords: Total records we got ${maps.length} although we needed $n');
+    if (maps.length > 0) {
+      print(
+          'getNRecords: Total records we got ${maps.length} although we needed $n');
       List<Model> models = [];
-      maps.forEach((m){
+      maps.forEach((m) {
         models.add(model.fromMap(m));
       });
       return models;
@@ -115,24 +123,22 @@ class DatabaseHelper{
   // List of plain models would be returned after this method
   // The developer is expected to convert the models into widgets
   // or some other format
-  Future<List<Model>> queryAll(Model model, {bool reverse=false}) async{
+  Future<List<Model>> queryAll(Model model, {bool reverse = false}) async {
     String order = 'ASC';
-    if (reverse){
+    if (reverse) {
       order = 'DESC';
     }
     Database db = await database;
     List<Map> maps = await db.query(model.getTableName(),
-    columns: model.getDbColumns(),
-    orderBy: '${model.getDbColumns()[0]} $order'
-    );
-    if (maps.length > 0){
+        columns: model.getDbColumns(),
+        orderBy: '${model.getDbColumns()[0]} $order');
+    if (maps.length > 0) {
       List<Model> models = [];
-      maps.forEach((m){
+      maps.forEach((m) {
         models.add(model.fromMap(m));
       });
       return models;
     }
     return [];
   }
-
 }
