@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../myWidgets/CircularColors.dart';
 import '../myWidgets/CircularColorDropdownItem.dart';
-import '../myDatabase/myModels/WalletModel.dart';
-import '../myDatabase/DatabaseHelper.dart';
+// import '../myDatabase/myModels/WalletModel.dart';
+import '../moor/moor_database.dart';
+// import '../myDatabase/DatabaseHelper.dart';
 
 class AddWalletPage extends StatelessWidget {
   @override
@@ -26,15 +28,16 @@ class AddWalletFormWidget extends StatefulWidget {
 }
 
 class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
-
   String name;
   String description;
-  double initalAmount;  
+  double initalAmount;
   String materialColorStr;
-  String currency = 'PKR'; // by default value because this dropdown is currently disabled
+  String currency =
+      'PKR'; // by default value because this dropdown is currently disabled
 
   @override
   Widget build(BuildContext context) {
+    final database = Provider.of<AppDatabase>(context);
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: ListView(
@@ -70,7 +73,6 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
           TextField(
             maxLength: 8,
             maxLengthEnforced: true,
-            
             keyboardType: TextInputType.number,
             decoration: InputDecoration(
               labelText: 'Initial Amount e.g. 5000',
@@ -95,7 +97,6 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-
                 DropdownButton<String>(
                   onChanged: (value) {
                     setState(() {
@@ -107,29 +108,30 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
                   items: CircularColorMap.keys.map(
                     (String key) {
                       return DropdownMenuItem<String>(
-                        child: CircularColorDropdownItem(color: CircularColorMap[key], colorName: key,),
+                        child: CircularColorDropdownItem(
+                          color: CircularColorMap[key],
+                          colorName: key,
+                        ),
                         value: key,
                       );
                     },
                   ).toList(),
                 ),
-
                 DropdownButton<String>(
-                  onChanged: (value){
-                    setState(() {
-                     this.currency = value; 
-                    });
-                  },
-                  disabledHint: Text('PKR'),
-                  hint: Text('Currency'),
-                  value: this.currency,
-                  items: null
-                  // <DropdownMenuItem<String>>[
-                  //   DropdownMenuItem<String>(child: Text('PKR'), value: 'PKR',),
-                  // ],
+                    onChanged: (value) {
+                      setState(() {
+                        this.currency = value;
+                      });
+                    },
+                    disabledHint: Text('PKR'),
+                    hint: Text('Currency'),
+                    value: this.currency,
+                    items: null
+                    // <DropdownMenuItem<String>>[
+                    //   DropdownMenuItem<String>(child: Text('PKR'), value: 'PKR',),
+                    // ],
 
-                ),
-
+                    ),
               ],
             ),
           ),
@@ -142,15 +144,27 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
             ),
             onPressed: () {
               print('Going to add wallet');
-              WalletModel w = new WalletModel();
-              w.name = this.name;
-              w.description = this.description;
-              w.currency = this.currency;
-              w.color = this.materialColorStr;
-              w.initialAmount = this.initalAmount;
-              DatabaseHelper.instance.insert(w.getTableName(), w).then((onValue){
+              Wallet wallet = Wallet(
+                  name: this.name,
+                  description: this.description,
+                  currency: this.currency,
+                  color: this.materialColorStr,
+                  initialAmount: this.initalAmount,
+                  deleted: false);
+              // WalletModel w = new WalletModel();
+              // w.name = this.name;
+              // w.description = this.description;
+              // w.currency = this.currency;
+              // w.color = this.materialColorStr;
+              // w.initialAmount = this.initalAmount;
+              // DatabaseHelper.instance.insert(w.getTableName(), w).then((onValue){
+              //   Navigator.of(context).pop(true);
+              // }).catchError((onError){
+              //   Navigator.of(context).pop(false);
+              // });
+              database.insertWallet(wallet).then((onValue) {
                 Navigator.of(context).pop(true);
-              }).catchError((onError){
+              }).catchError((onError) {
                 Navigator.of(context).pop(false);
               });
             },

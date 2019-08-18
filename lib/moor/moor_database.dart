@@ -55,8 +55,38 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         beforeOpen: (db, details) async {
           await db.customStatement('PRAGMA foreign_keys = ON');
+          // await db.into(categories).insert(Category(deleted: false, name: 'Other'));
         },
       );
+
+  // WALLETS
+  Future<List<Wallet>> getAllWallets() => select(wallets).get();
+  Future insertWallet(Wallet wallet) => into(wallets).insert(wallet);
+
+  // CATEGORIES
+  Future<List<Category>> getAllCategories() => select(categories).get();
+  Future insertCategory(Category category) => into(categories).insert(category);
+
+  // TRANSACTIONS
+
+  Future inserTransaction(TransactionsCompanion transaction) =>
+      into(transactions).insert(transaction);
+
+  Future<List<TransactionWithWalletAndCategory>> getAllTransactions() async {
+    final rows = await select(transactions).join(
+      [
+        leftOuterJoin(wallets, wallets.name.equalsExp(transactions.walletName)),
+        leftOuterJoin(
+            categories, categories.name.equalsExp(transactions.categoryName)),
+      ],
+    ).get();
+    return rows.map((resultRow) {
+      return TransactionWithWalletAndCategory(
+          category: resultRow.readTable(categories),
+          transaction: resultRow.readTable(transactions),
+          wallet: resultRow.readTable(wallets));
+    }).toList();
+  }
 
   Stream<List<TransactionWithWalletAndCategory>> watchAllTransactions() {
     return (select(transactions)

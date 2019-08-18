@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
+import '../moor/moor_database.dart';
 
 import './CircularColors.dart';
 import '../myPages/AddWalletPage.dart';
@@ -29,7 +32,12 @@ class AddWalletWidget extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 3.0),
-                  child: Text('Add Wallet', style: TextStyle(color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold),),
+                  child: Text(
+                    'Add Wallet',
+                    style: TextStyle(
+                        color: Theme.of(context).primaryColorDark,
+                        fontWeight: FontWeight.bold),
+                  ),
                 )
               ],
             ),
