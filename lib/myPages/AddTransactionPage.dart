@@ -279,9 +279,8 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                   setState(() {
                     dateTime = new DateTime(date.year, date.month, date.day,
                         onValue.hour, onValue.minute);
-                    dateTimeFormatted = DateFormat('yyyy-MM-dd HH:mm')
-                        .format(dateTime)
-                        .toString();
+                    dateTimeFormatted =
+                        DateFormat("yMEd").add_jm().format(dateTime).toString();
                   });
                 });
               });
@@ -305,7 +304,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
               'Add Transaction',
               style: TextStyle(color: Colors.white),
             ),
-            onPressed: () {
+            onPressed: () async {
               if (validate()) {
                 if (transactionTypeMap[transactionType] == 1) {
                   this.amount *= -1; // Spend Amount
@@ -322,10 +321,25 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                   categoryName: Value('Other'),
                   walletName: Value(this.currentChosenWallet.name),
                 );
-                Provider.of<AppDatabase>(context)
-                    .inserTransaction(transaction)
-                    .then((onValue) {
-                  Navigator.of(context).pop(true);
+                WalletsCompanion walletEntry = WalletsCompanion(
+                    color: Value(this.currentChosenWallet.color),
+                    initialAmount: Value(
+                        this.currentChosenWallet.initialAmount + this.amount),
+                    currency: Value(this.currentChosenWallet.currency),
+                    deleted: Value(this.currentChosenWallet.deleted),
+                    description: Value(this.currentChosenWallet.description),
+                    name: Value(this.currentChosenWallet.name));
+                final database = Provider.of<AppDatabase>(context);
+                database.inserTransaction(transaction).then((_) async {
+                  database.updateWallet(walletEntry).then((_) {
+                    Navigator.of(context).pop(true);
+                  }).catchError((_) async {
+                    Scaffold.of(context).showSnackBar(new SnackBar(
+                      content: new Text(
+                          "There was some error in processing the wallet. Rolling back transaction"),
+                    ));
+                    await database.deleteTransaction(transaction);
+                  });
                 }).catchError((onError) {
                   print(onError);
                   Navigator.of(context).pop(false);

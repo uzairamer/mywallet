@@ -62,6 +62,8 @@ class AppDatabase extends _$AppDatabase {
   // WALLETS
   Future<List<Wallet>> getAllWallets() => select(wallets).get();
   Future insertWallet(Wallet wallet) => into(wallets).insert(wallet);
+  Future updateWallet(WalletsCompanion wallet) =>
+      update(wallets).replace(wallet);
 
   // CATEGORIES
   Future<List<Category>> getAllCategories() => select(categories).get();
@@ -72,14 +74,33 @@ class AppDatabase extends _$AppDatabase {
   Future inserTransaction(TransactionsCompanion transaction) =>
       into(transactions).insert(transaction);
 
+  Future deleteTransaction(TransactionsCompanion transaction) =>
+      delete(transactions).delete(transaction);
+
   Future<List<TransactionWithWalletAndCategory>> getAllTransactions() async {
-    final rows = await select(transactions).join(
+    // final rows = await select(transactions).join(
+    //   [
+    //     leftOuterJoin(wallets, wallets.name.equalsExp(transactions.walletName)),
+    //     leftOuterJoin(
+    //         categories, categories.name.equalsExp(transactions.categoryName)),
+    //   ],
+    // ).get();
+
+    final rows = await (select(transactions)
+          ..orderBy(
+            [
+              (t) =>
+                  OrderingTerm(expression: t.datetime, mode: OrderingMode.desc)
+            ],
+          ))
+        .join(
       [
         leftOuterJoin(wallets, wallets.name.equalsExp(transactions.walletName)),
         leftOuterJoin(
             categories, categories.name.equalsExp(transactions.categoryName)),
       ],
     ).get();
+
     return rows.map((resultRow) {
       return TransactionWithWalletAndCategory(
           category: resultRow.readTable(categories),

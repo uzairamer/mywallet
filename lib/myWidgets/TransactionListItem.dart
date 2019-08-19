@@ -51,6 +51,7 @@ class TransactionListItem extends StatelessWidget {
     Transaction transaction = this.transaction.transaction;
     Category category = this.transaction.category;
     String addOrSpend = transaction.transactionType == 0 ? '+' : '-';
+    String formattedDateTime = DateFormat("yMEd").add_jm().format(transaction.datetime);
     // String dateTime = this.transaction.datetime == null
     //     ? 'Date & Time NA'
     //     : this.dateTimeParser(trm.dateTime);
@@ -109,7 +110,7 @@ class TransactionListItem extends StatelessWidget {
                         color: textColor),
                   )),
                   Text(
-                    '$addOrSpend ${wallet.currency} ${transaction.amount.toString()}',
+                    '${wallet.currency} ${transaction.amount.toString()}',
                     style: TextStyle(fontSize: 18.0, color: textColor),
                   )
                 ],
@@ -126,7 +127,7 @@ class TransactionListItem extends StatelessWidget {
                       ),
                     ),
                     Text(
-                      transaction.datetime.toString(),
+                      formattedDateTime,
                       style: TextStyle(fontSize: 14.0, color: textColor),
                     )
                   ],

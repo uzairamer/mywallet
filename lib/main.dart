@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
 import './moor/moor_database.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,7 @@ import './myWidgets/TransactionListItem.dart';
 
 import './myPages/AddWalletPage.dart';
 import './myPages/AddTransactionPage.dart';
+import './myPages/SplashScreenPage.dart';
 
 // import './myDatabase/DatabaseHelper.dart';
 // import './myDatabase/myModels/Model.dart';
@@ -18,50 +20,65 @@ import './myPages/AddTransactionPage.dart';
 // import './myDatabase/myModels/TransactionModel.dart';
 
 void main() => runApp(AlertProvider(child: MyApp()));
-
-class AddWalletWidgetClickable extends StatelessWidget {
-  // final Function addWalletCallback;
-  AddWalletWidgetClickable();
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () async {
-        final bool result = await Navigator.push(
-            context, MaterialPageRoute(builder: (context) => AddWalletPage()));
-        String response = '';
-        if (result)
-          response = 'New Wallet has been added.';
-        else
-          response =
-              'There was an error while adding the Wallet. Perhaps you should check the name';
-        // this.addWalletCallback();
-        // Fluttertoast.showToast(
-        //     msg: response,
-        //     toastLength: Toast.LENGTH_LONG,
-        //     gravity: ToastGravity.BOTTOM,
-        //     backgroundColor: Theme.of(context).accentColor,
-        //     textColor: Colors.white,
-        //     fontSize: 16.0);
-      },
-      child: AddWalletWidget(),
-    );
-  }
-}
+final String appName = "Auditor";
 
 class MyApp extends StatelessWidget {
-  final String appName = "Auditor";
-
   @override
   Widget build(BuildContext context) {
     return Provider(
       builder: (_) => AppDatabase(),
       child: MaterialApp(
-        title: this.appName,
+        title: appName,
         theme: ThemeData(
           primarySwatch: Colors.blueGrey,
         ),
-        home: MyHomePage(title: this.appName),
+        home: SplashScreenApp(),
+      ),
+    );
+  }
+}
+
+class SplashScreenApp extends StatefulWidget {
+  @override
+  _SplashScreenAppState createState() => _SplashScreenAppState();
+}
+
+class _SplashScreenAppState extends State<SplashScreenApp> {
+  Future checkForFirstLoad(BuildContext context) async {
+    SharedPreferences preferences = await SharedPreferences.getInstance();
+    if (preferences.getBool('firstTime') ?? false) {
+    } else {
+      // First time
+      final database = Provider.of<AppDatabase>(context);
+      await database.insertCategory(Category(deleted: false, name: 'Other'));
+      preferences.setBool('firstTime', true);
+    }
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
+      builder: (context) => MyHomePage(
+        title: appName,
+      ),
+    ));
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(milliseconds: 100)).then((_) {
+      checkForFirstLoad(context);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // TODO: implement build
+    return Provider(
+      builder: (_) => AppDatabase(),
+      child: Scaffold(
+        body: Container(
+          child: Center(
+            child: Text('Loading...'),
+          ),
+        ),
       ),
     );
   }
@@ -306,35 +323,20 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Expanded(
                     child: Padding(
-                        padding: const EdgeInsets.only(
-                            left: 8.0, right: 8.0, bottom: 8.0),
-                        child: MaterialButton(
-                          onPressed: () {
-                            Alert.toast(context, 'This is a toast',
-                                position: ToastPosition.bottom,
-                                duration: ToastDuration.long);
-                            // Fluttertoast.showToast(
-                            //     msg:
-                            //         'There was an error while adding the Wallet. Perhaps you should check the name',
-                            //     toastLength: Toast.LENGTH_SHORT,
-                            //   gravity: ToastGravity.BOTTOM,
-                            //     backgroundColor: Theme.of(context).accentColor,
-                            //     textColor: Colors.white,
-                            //     fontSize: 16.0);
-                          },
-                          child: _allTransactionsBuilder(context),
-                        )
-                        // ListView.builder(
-                        //   itemCount: this.transactionModels.length,
-                        //   itemBuilder: (BuildContext context, int index) {
-                        //     return TransactionListItem(
-                        //         trm: this.transactionModels[index],
-                        //         wm: this.wms[index],
-                        //         onDelete: this.handleTransactionDelete);
-                        //   },
-                        // ),
-                        // // child: ListView(children: (this.transactionList == null || this.transactionList.length == 0) ? [Center(child: Text('Transactions will be shown here'))] : this.transactionList),
-                        ),
+                      padding: const EdgeInsets.only(
+                          left: 8.0, right: 8.0, bottom: 8.0),
+                      child: _allTransactionsBuilder(context),
+                    ),
+                    // ListView.builder(
+                    //   itemCount: this.transactionModels.length,
+                    //   itemBuilder: (BuildContext context, int index) {
+                    //     return TransactionListItem(
+                    //         trm: this.transactionModels[index],
+                    //         wm: this.wms[index],
+                    //         onDelete: this.handleTransactionDelete);
+                    //   },
+                    // ),
+                    // // child: ListView(children: (this.transactionList == null || this.transactionList.length == 0) ? [Center(child: Text('Transactions will be shown here'))] : this.transactionList),
                   ),
                 ],
               ),
