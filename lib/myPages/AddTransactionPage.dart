@@ -5,9 +5,15 @@ import 'package:intl/intl.dart';
 // import '../myDatabase/DatabaseHelper.dart';
 import '../myDatabase/myModels/Model.dart';
 import '../myDatabase/myModels/WalletModel.dart';
-import 'package:moor/moor.dart';
+//import 'package:moor/moor.dart';
 import '../moor/moor_database.dart';
 // import '../myDatabase/myModels/TransactionModel.dart';
+
+Map<String, int> TransactionTypeMap = {
+  'Add Amount': 0,
+  'Spend Amount': 1,
+  'Transfer Amount': 2
+};
 
 class AddTransactionPage extends StatelessWidget {
   @override
@@ -48,11 +54,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
   List<DropdownMenuItem<String>> dropdownItems = new List();
   // List<Model> walletModels = new List();
   List<Wallet> wallets;
-  Map<String, int> transactionTypeMap = {
-    'Add Amount': 0,
-    'Spend Amount': 1,
-    'Transfer Amount': 2
-  };
 
   // void getIdsOfWallets() async {
   //   walletModels = await DatabaseHelper.instance.queryAll(new WalletModel());
@@ -124,7 +125,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
       return false;
     }
     if (this.amount > this.currentChosenWallet.initialAmount &&
-        transactionTypeMap[transactionType] == 1) {
+        TransactionTypeMap[transactionType] == 1) {
       Scaffold.of(context).showSnackBar(new SnackBar(
         content:
             new Text("Amount is greater than the amount available in wallet"),
@@ -182,7 +183,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                 });
               },
               hint: Text('Choose Transaction Type'),
-              items: transactionTypeMap.keys.map((key) {
+              items: TransactionTypeMap.keys.map((key) {
                 return DropdownMenuItem<String>(
                   child: Text(key),
                   value: key,
@@ -306,32 +307,43 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
             ),
             onPressed: () async {
               if (validate()) {
-                if (transactionTypeMap[transactionType] == 1) {
+                if (TransactionTypeMap[transactionType] == 1) {
                   this.amount *= -1; // Spend Amount
                 }
-                TransactionsCompanion transaction = TransactionsCompanion(
-                  amount: Value(this.amount),
-                  datetime: Value(this.dateTime),
-                  deleted: Value(false),
-                  title: Value(this.title),
-                  description:
-                      Value(this.description ?? 'No Description was Provided'),
-                  transactionType:
-                      Value(this.transactionTypeMap[this.transactionType]),
-                  categoryName: Value('Other'),
-                  walletName: Value(this.currentChosenWallet.name),
+                Transaction transaction = new Transaction(
+                  amount: this.amount,
+                  datetime: this.dateTime,
+                  deleted: false,
+                  title: this.title,
+                  description: this.description ?? 'No Description was Provided',
+                  transactionType: TransactionTypeMap[this.transactionType],
+                  categoryName: 'Other',
+                  walletName: this.currentChosenWallet.name,
                 );
-                WalletsCompanion walletEntry = WalletsCompanion(
-                    color: Value(this.currentChosenWallet.color),
-                    initialAmount: Value(
-                        this.currentChosenWallet.initialAmount + this.amount),
-                    currency: Value(this.currentChosenWallet.currency),
-                    deleted: Value(this.currentChosenWallet.deleted),
-                    description: Value(this.currentChosenWallet.description),
-                    name: Value(this.currentChosenWallet.name));
+//                TransactionsCompanion transaction = TransactionsCompanion(
+//                  amount: Value(this.amount),
+//                  datetime: Value(this.dateTime),
+//                  deleted: Value(false),
+//                  title: Value(this.title),
+//                  description:
+//                      Value(this.description ?? 'No Description was Provided'),
+//                  transactionType:
+//                      Value(transactionTypeMap[this.transactionType]),
+//                  categoryName: Value('Other'),
+//                  walletName: Value(this.currentChosenWallet.name),
+//                );
+//                WalletsCompanion walletEntry = WalletsCompanion(
+//                    color: Value(this.currentChosenWallet.color),
+//                    initialAmount: Value(
+//                        this.currentChosenWallet.initialAmount + this.amount),
+//                    currency: Value(this.currentChosenWallet.currency),
+//                    deleted: Value(this.currentChosenWallet.deleted),
+//                    description: Value(this.currentChosenWallet.description),
+//                    name: Value(this.currentChosenWallet.name));
+                Wallet wallet = this.currentChosenWallet.copyWith(initialAmount: this.currentChosenWallet.initialAmount + this.amount);
                 final database = Provider.of<AppDatabase>(context);
                 database.inserTransaction(transaction).then((_) async {
-                  database.updateWallet(walletEntry).then((_) {
+                  database.updateWallet(wallet).then((_) {
                     Navigator.of(context).pop(true);
                   }).catchError((_) async {
                     Scaffold.of(context).showSnackBar(new SnackBar(

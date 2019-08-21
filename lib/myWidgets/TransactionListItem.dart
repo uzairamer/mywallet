@@ -10,6 +10,7 @@ class TransactionListItem extends StatelessWidget {
   // final WalletModel wm;
   // final Function onDelete;
   final TransactionWithWalletAndCategory transaction;
+  final Function onDelete;
   final List<String> monthNames = const [
     'January',
     'February',
@@ -25,7 +26,7 @@ class TransactionListItem extends StatelessWidget {
     'December'
   ];
 
-  const TransactionListItem({Key key, this.transaction}) : super(key: key);
+  const TransactionListItem({Key key, this.transaction, this.onDelete}) : super(key: key);
 
   String dateTimeParser(String dateTimeStr) {
     final formatter = DateFormat('yyyy-mm-dd hh:mm');
@@ -33,10 +34,8 @@ class TransactionListItem extends StatelessWidget {
 
     List<String> dateSplit = dateTimeStr.split(' ');
     List<String> date = dateSplit[0].split('-');
-    var dateOnly =
-        DateTime(int.parse(date[0]), int.parse(date[1]), int.parse(date[2]));
-    String result =
-        '${this.monthNames[dateOnly.month - 1]} ${dateOnly.day}, ${dateOnly.year} at $timeStr';
+    var dateOnly = DateTime(int.parse(date[0]), int.parse(date[1]), int.parse(date[2]));
+    String result = '${this.monthNames[dateOnly.month - 1]} ${dateOnly.day}, ${dateOnly.year} at $timeStr';
     return result;
   }
 
@@ -77,14 +76,14 @@ class TransactionListItem extends StatelessWidget {
                   SimpleDialogOption(
                     child: Text('Delete & Refund to Wallet'),
                     onPressed: () {
-                      // onDelete(trm, true); // refund = true
+                       onDelete(this.transaction, true); // refund = true
                       _dismissDialog(context);
                     },
                   ),
                   SimpleDialogOption(
                     child: Text('Delete & No Refund'),
                     onPressed: () {
-                      // onDelete(trm, false); // refund = true
+                       onDelete(this.transaction, false); // refund = true
                       _dismissDialog(context);
                     },
                   ),
@@ -104,10 +103,7 @@ class TransactionListItem extends StatelessWidget {
                   Expanded(
                       child: Text(
                     transaction.title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                        color: textColor),
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0, color: textColor),
                   )),
                   Text(
                     '${wallet.currency} ${transaction.amount.toString()}',

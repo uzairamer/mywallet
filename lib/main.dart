@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 // import 'package:fluttertoast/fluttertoast.dart';
 import './moor/moor_database.dart';
 import 'package:provider/provider.dart';
@@ -63,9 +64,11 @@ class _SplashScreenAppState extends State<SplashScreenApp> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(Duration(milliseconds: 100)).then((_) {
-      checkForFirstLoad(context);
-    });
+    Future.delayed(Duration(milliseconds: 100)).then(
+      (_) {
+        checkForFirstLoad(context);
+      },
+    );
   }
 
   @override
@@ -97,27 +100,24 @@ typedef void MyAddWalletCallback();
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> wallets;
   List<Widget> transactionList;
+
   // List<Model> transactionModels = List();
   // List<WalletModel> wms = List();
   String totalRemainingAmountWithCurrency = "";
 
   void _onAddTransaction() async {
-    bool result = await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
+    bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
   }
 
   void _onAddWallet(BuildContext context) async {
-    final bool result = await Navigator.push(
-        context, MaterialPageRoute(builder: (context) => AddWalletPage()));
+    final bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddWalletPage()));
 
     String response = '';
     if (result)
       response = 'New Wallet has been added.';
     else
-      response =
-          'There was an error while adding the Wallet. Perhaps you should check the name';
-    Alert.toast(context, response,
-        position: ToastPosition.bottom, duration: ToastDuration.long);
+      response = 'There was an error while adding the Wallet. Perhaps you should check the name';
+    Alert.toast(context, response, position: ToastPosition.bottom, duration: ToastDuration.long);
   }
 
   void _onAddCategory() {}
@@ -125,30 +125,13 @@ class _MyHomePageState extends State<MyHomePage> {
   FabDialer mainFabDialer(BuildContext context) {
     final color = Theme.of(context).accentColor;
     return FabDialer([
-      FabMiniMenuItem.withText(
-          new Icon(Icons.account_balance_wallet), color, 4.0, "Add Wallet", () {
+      FabMiniMenuItem.withText(new Icon(Icons.account_balance_wallet), color, 4.0, "Add Wallet", () {
         this._onAddWallet(context);
       }, "Add Wallet", color, Colors.white, true),
-      FabMiniMenuItem.withText(
-          new Icon(Icons.category),
-          color,
-          4.0,
-          "Add Category",
-          this._onAddCategory,
-          "Add Category",
-          color,
-          Colors.white,
-          true),
-      FabMiniMenuItem.withText(
-          new Icon(Icons.import_export),
-          color,
-          4.0,
-          "Add Transaction",
-          this._onAddTransaction,
-          "Add Transaction",
-          color,
-          Colors.white,
-          true),
+      FabMiniMenuItem.withText(new Icon(Icons.category), color, 4.0, "Add Category", this._onAddCategory,
+          "Add Category", color, Colors.white, true),
+      FabMiniMenuItem.withText(new Icon(Icons.import_export), color, 4.0, "Add Transaction", this._onAddTransaction,
+          "Add Transaction", color, Colors.white, true),
     ], color, Icon(Icons.add));
   }
 
@@ -210,6 +193,22 @@ class _MyHomePageState extends State<MyHomePage> {
   //   _read();
   // }
 
+  void handleTransactionDelete(
+      BuildContext context, TransactionWithWalletAndCategory transaction, bool refundPolicy) async {
+    final database = Provider.of<AppDatabase>(context);
+    double amount = transaction.transaction.amount;
+    int transactionType = transaction.transaction.transactionType;
+    double walletAmount = transaction.wallet.initialAmount;
+
+    if (refundPolicy) {
+      if (transactionType == 1) {
+        amount *= -1;
+      }
+    }
+    await database.updateWallet(transaction.wallet.copyWith(initialAmount: walletAmount + amount));
+    await database.deleteTransaction(transaction.transaction);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -236,10 +235,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Column(
                 children: <Widget>[
-                  Container(
-                      margin: EdgeInsets.only(top: 5.0),
-                      height: 100,
-                      child: this._allWalletsBuilder(context)),
+                  Container(margin: EdgeInsets.only(top: 5.0), height: 100, child: this._allWalletsBuilder(context)),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -249,8 +245,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: <Widget>[
                         Text(
                           'Money Statistics',
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor),
+                          style: TextStyle(color: Theme.of(context).primaryColor),
                         ),
                         Expanded(
                           child: Padding(
@@ -278,18 +273,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               Text(
                                 'Total Amount Available:',
                                 textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontSize: 20.0,
-                                    color: Theme.of(context).primaryColorDark),
+                                style: TextStyle(fontSize: 20.0, color: Theme.of(context).primaryColorDark),
                               ),
-                              Text(
-                                totalRemainingAmountWithCurrency,
-                                textAlign: TextAlign.left,
-                                style: TextStyle(
-                                    fontSize: 25.0,
-                                    fontWeight: FontWeight.bold,
-                                    color: Theme.of(context).primaryColorDark),
-                              ),
+                              totalAmountWithCurrency(context)
                             ],
                           ),
                         ),
@@ -305,8 +291,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: <Widget>[
                         Text(
                           'Most Recent Transactions',
-                          style:
-                              TextStyle(color: Theme.of(context).primaryColor),
+                          style: TextStyle(color: Theme.of(context).primaryColor),
                         ),
                         Expanded(
                           child: Padding(
@@ -323,8 +308,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(
-                          left: 8.0, right: 8.0, bottom: 8.0),
+                      padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
                       child: _allTransactionsBuilder(context),
                     ),
                     // ListView.builder(
@@ -360,8 +344,34 @@ class _MyHomePageState extends State<MyHomePage> {
           itemCount: transactions.length,
           itemBuilder: (_, index) {
             final transaction = transactions[index];
-            return TransactionListItem(transaction: transaction);
+            return TransactionListItem(
+              transaction: transaction,
+              onDelete: (tr, refundPolicy) => handleTransactionDelete(context, tr, refundPolicy),
+            );
           },
+        );
+      },
+    );
+  }
+
+  FutureBuilder totalAmountWithCurrency(BuildContext context) {
+    final database = Provider.of<AppDatabase>(context);
+
+    return FutureBuilder(
+      future: database.getAllWallets(),
+      builder: (context, snapshot) {
+        final List<Wallet> wallets = snapshot.data ?? [];
+        double amount = 0.0;
+        String currency = "";
+        wallets.forEach((w) {
+          amount += w.initialAmount;
+          currency = w.currency; // I know that's not scalable
+        });
+
+        return Text(
+          "$currency $amount",
+          textAlign: TextAlign.left,
+          style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColorDark),
         );
       },
     );
@@ -370,7 +380,6 @@ class _MyHomePageState extends State<MyHomePage> {
   FutureBuilder _allWalletsBuilder(BuildContext context) {
     final database = Provider.of<AppDatabase>(context);
     return FutureBuilder(
-      // initialData: [CircularProgressIndicator()],
       future: database.getAllWallets(),
       builder: (context, snapshot) {
         final wallets = snapshot.data ?? [];
