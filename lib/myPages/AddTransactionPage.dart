@@ -1,19 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+import 'package:mywallet/Utils.dart';
 
-// import '../myDatabase/DatabaseHelper.dart';
-import '../myDatabase/myModels/Model.dart';
-import '../myDatabase/myModels/WalletModel.dart';
-//import 'package:moor/moor.dart';
 import '../moor/moor_database.dart';
-// import '../myDatabase/myModels/TransactionModel.dart';
 
-Map<String, int> TransactionTypeMap = {
-  'Add Amount': 0,
-  'Spend Amount': 1,
-  'Transfer Amount': 2
-};
+Map<String, int> TransactionTypeMap = {'Add Amount': 0, 'Spend Amount': 1, 'Transfer Amount': 2};
 
 class AddTransactionPage extends StatelessWidget {
   @override
@@ -35,38 +26,19 @@ class AddTransactionPageForm extends StatefulWidget {
 }
 
 class AddTransactionPageFormState extends State<AddTransactionPageForm> {
+
   int walletId;
   int spentOrAdd;
-
   double amount;
-
   String walletName; // chosen wallet name from the dropdown
   String title; // title for the transaction
   String description; // description for the transaction
   String transactionType; // chosen transaction type from the dropdown
-  // String dateAndTime = 'Add Date & Time';
-  DateTime dateTime;
   String dateTimeFormatted = 'Add Date & Time';
-
-  // WalletModel currentChosenWallet;
+  DateTime dateTime;
   Wallet currentChosenWallet;
-
   List<DropdownMenuItem<String>> dropdownItems = new List();
-  // List<Model> walletModels = new List();
   List<Wallet> wallets;
-
-  // void getIdsOfWallets() async {
-  //   walletModels = await DatabaseHelper.instance.queryAll(new WalletModel());
-  //   walletModels.forEach((m) {
-  //     WalletModel wm = m as WalletModel;
-  //     setState(() {
-  //       dropdownItems.add(DropdownMenuItem<String>(
-  //         child: Text('${wm.name} - ${wm.currency} ${wm.initialAmount}'),
-  //         value: wm.name,
-  //       ));
-  //     });
-  //   });
-  // }
 
   void setUpWalletsForDropdown(BuildContext context) async {
     this.wallets = await Provider.of<AppDatabase>(context).getAllWallets();
@@ -85,19 +57,10 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
       if (wm.name == walletName) return wm;
     }
     return null;
-
-    // this.walletModels.forEach((m){
-    //   WalletModel wm = m as WalletModel;
-    //   if(wm.name == walletName){
-    //     return wm;
-    //   }
-    // });
-    // return null;
   }
 
   bool validate() {
-    if (this.currentChosenWallet.name == null ||
-        this.currentChosenWallet.name == "") {
+    if (this.currentChosenWallet.name == null || this.currentChosenWallet.name == "") {
       Scaffold.of(context).showSnackBar(new SnackBar(
         content: new Text("Please choose a wallet"),
       ));
@@ -124,17 +87,14 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
       ));
       return false;
     }
-    if (this.amount > this.currentChosenWallet.initialAmount &&
-        TransactionTypeMap[transactionType] == 1) {
+    if (this.amount > this.currentChosenWallet.initialAmount && TransactionTypeMap[transactionType] == 1) {
       Scaffold.of(context).showSnackBar(new SnackBar(
-        content:
-            new Text("Amount is greater than the amount available in wallet"),
+        content: new Text("Amount is greater than the amount available in wallet"),
       ));
       return false;
     }
     double amountTotal = this.amount + this.currentChosenWallet.initialAmount;
-    if (amountTotal < this.amount ||
-        amountTotal < this.currentChosenWallet.initialAmount) {
+    if (amountTotal < this.amount || amountTotal < this.currentChosenWallet.initialAmount) {
       Scaffold.of(context).showSnackBar(new SnackBar(
         content: new Text("Overflowed. Please choose the Amount appropriately"),
       ));
@@ -149,7 +109,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
     Future.delayed(Duration(milliseconds: 100)).then((_) {
       setUpWalletsForDropdown(context);
     });
-    // getIdsOfWallets();
   }
 
   @override
@@ -189,7 +148,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                   value: key,
                 );
               }).toList(),
-              // [DropdownMenuItem<String>(child: Text('Add Money'), value: 'Add Money',), DropdownMenuItem<String>(child: Text('Spend Money'), value: 'Spend Money',)],
               value: this.transactionType),
 
           TextField(
@@ -262,11 +220,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
               );
 
               selectedDate.then((date) {
-                // setState(() {
-                //   DateTime
-                //   dateAndTime =
-                //       '${onValue.year}-${onValue.month}-${onValue.day}';
-                // });
                 Future<TimeOfDay> selectedTime = showTimePicker(
                     initialTime: TimeOfDay.now(),
                     context: context,
@@ -278,24 +231,11 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                     });
                 selectedTime.then((onValue) {
                   setState(() {
-                    dateTime = new DateTime(date.year, date.month, date.day,
-                        onValue.hour, onValue.minute);
-                    dateTimeFormatted =
-                        DateFormat("yMEd").add_jm().format(dateTime).toString();
+                    dateTime = new DateTime(date.year, date.month, date.day, onValue.hour, onValue.minute);
+                    dateTimeFormatted = dateTime_yMedjm(dateTime);
                   });
                 });
               });
-
-              // Future<TimeOfDay> selectedTime = showTimePicker(
-              //   initialTime: TimeOfDay.now(),
-              //   context: context,
-              //   builder: (BuildContext context, Widget child){
-              //     return Theme(
-              //       data: Theme.of(context),
-              //       child: child,
-              //     );
-              //   }
-              // );
             },
           ),
 
@@ -307,9 +247,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
             ),
             onPressed: () async {
               if (validate()) {
-                if (TransactionTypeMap[transactionType] == 1) {
-                  this.amount *= -1; // Spend Amount
-                }
                 Transaction transaction = new Transaction(
                   amount: this.amount,
                   datetime: this.dateTime,
@@ -318,64 +255,34 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                   description: this.description ?? 'No Description was Provided',
                   transactionType: TransactionTypeMap[this.transactionType],
                   categoryName: 'Other',
-                  walletName: this.currentChosenWallet.name,
+                  walletName: this.currentChosenWallet.name, id: null,
                 );
-//                TransactionsCompanion transaction = TransactionsCompanion(
-//                  amount: Value(this.amount),
-//                  datetime: Value(this.dateTime),
-//                  deleted: Value(false),
-//                  title: Value(this.title),
-//                  description:
-//                      Value(this.description ?? 'No Description was Provided'),
-//                  transactionType:
-//                      Value(transactionTypeMap[this.transactionType]),
-//                  categoryName: Value('Other'),
-//                  walletName: Value(this.currentChosenWallet.name),
-//                );
-//                WalletsCompanion walletEntry = WalletsCompanion(
-//                    color: Value(this.currentChosenWallet.color),
-//                    initialAmount: Value(
-//                        this.currentChosenWallet.initialAmount + this.amount),
-//                    currency: Value(this.currentChosenWallet.currency),
-//                    deleted: Value(this.currentChosenWallet.deleted),
-//                    description: Value(this.currentChosenWallet.description),
-//                    name: Value(this.currentChosenWallet.name));
-                Wallet wallet = this.currentChosenWallet.copyWith(initialAmount: this.currentChosenWallet.initialAmount + this.amount);
+                if (TransactionTypeMap[transactionType] == 1) {
+                  this.amount *= -1; // Spend Amount
+                }
+                Wallet wallet = this
+                    .currentChosenWallet
+                    .copyWith(initialAmount: this.currentChosenWallet.initialAmount + this.amount);
                 final database = Provider.of<AppDatabase>(context);
-                database.inserTransaction(transaction).then((_) async {
-                  database.updateWallet(wallet).then((_) {
-                    Navigator.of(context).pop(true);
-                  }).catchError((_) async {
-                    Scaffold.of(context).showSnackBar(new SnackBar(
-                      content: new Text(
-                          "There was some error in processing the wallet. Rolling back transaction"),
-                    ));
-                    await database.deleteTransaction(transaction);
-                  });
-                }).catchError((onError) {
-                  print(onError);
-                  Navigator.of(context).pop(false);
-                });
-                // DatabaseHelper.instance.update(currentChosenWallet.getTableName(), currentChosenWallet, currentChosenWallet.id).then((onValue){
-                //   TransactionModel trm = new TransactionModel();
-                //   trm.title = this.title;
-                //   trm.description = this.description;
-                //   trm.amount = this.amount;
-                //   trm.walletId = this.currentChosenWallet.id;
-                //   trm.categoryId = null;
-                //   trm.transactionType = this.transactionTypeMap[this.transactionType];
-                //   trm.dateTime = this.dateAndTime;
-                //   DatabaseHelper.instance.insert(trm.getTableName(), trm).then((onValue){
-                //     Navigator.of(context).pop(true);
-                //   }).catchError((onError){
-                //     print('Adding transaction failed: $onError');
-                //     Navigator.of(context).pop(false);
-                //   });
-                // }).catchError((onError){
-                //   Scaffold.of(context).showSnackBar(new SnackBar(
-                //     content: new Text("There was some error in updating wallets"),
-                //   ));
-                // });
+                database.inserTransaction(transaction).then(
+                  (_) async {
+                    database.updateWallet(wallet).then((_) {
+                      Navigator.of(context).pop(true);
+                    }).catchError((_) async {
+                      Scaffold.of(context).showSnackBar(
+                        new SnackBar(
+                          content: new Text("There was some error in processing the wallet. Rolling back transaction"),
+                        ),
+                      );
+                      await database.deleteTransaction(transaction);
+                    });
+                  },
+                ).catchError(
+                  (onError) {
+                    print(onError);
+                    Navigator.of(context).pop(false);
+                  },
+                );
               }
             },
           ),

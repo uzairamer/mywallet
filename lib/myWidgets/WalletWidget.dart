@@ -4,14 +4,7 @@ import '../myWidgets/CircularColors.dart';
 import '../moor/moor_database.dart';
 
 class WalletWidget extends StatelessWidget {
-  // final String walletName;
-  // final double walletAmount;
   final Wallet wallet;
-
-  // color must be of only 100 shade
-  // color must be a proper MaterialColor
-  // final MaterialColor color;
-  // final String currency;
 
   WalletWidget(this.wallet);
 
@@ -44,15 +37,6 @@ class WalletWidget extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // Wallet currency
-                // Padding(
-                //   padding: const EdgeInsets.all(8.0),
-                //   child: Text(
-                //     '${this.currency}',
-                //     style: TextStyle(fontSize: 12.0, color: Theme.of(context).primaryColorDark)
-                //   ),
-                // ),
 
                 // Wallet Amount
                 Padding(

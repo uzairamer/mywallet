@@ -61,6 +61,7 @@ class AppDatabase extends _$AppDatabase {
 
   // WALLETS
   Future<List<Wallet>> getAllWallets() => select(wallets).get();
+  Stream<List<Wallet>> watchAllWallets() => select(wallets).watch();
   Future insertWallet(Wallet wallet) => into(wallets).insert(wallet);
   Future updateWallet(Wallet wallet) =>
       update(wallets).replace(wallet);

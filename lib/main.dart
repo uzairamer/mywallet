@@ -1,24 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-// import 'package:fluttertoast/fluttertoast.dart';
-import './moor/moor_database.dart';
 import 'package:provider/provider.dart';
 import 'package:easy_alert/easy_alert.dart';
 
+import './moor/moor_database.dart';
 import './myWidgets/WalletWidget.dart';
-import './myWidgets/AddWalletWidget.dart';
 import './myWidgets/TransactionListItem.dart';
 
 import './myPages/AddWalletPage.dart';
 import './myPages/AddTransactionPage.dart';
-import './myPages/SplashScreenPage.dart';
-
-// import './myDatabase/DatabaseHelper.dart';
-// import './myDatabase/myModels/Model.dart';
-// import './myDatabase/myModels/WalletModel.dart';
-// import './myDatabase/myModels/TransactionModel.dart';
 
 void main() => runApp(AlertProvider(child: MyApp()));
 final String appName = "Auditor";
@@ -100,13 +91,10 @@ typedef void MyAddWalletCallback();
 class _MyHomePageState extends State<MyHomePage> {
   List<Widget> wallets;
   List<Widget> transactionList;
-
-  // List<Model> transactionModels = List();
-  // List<WalletModel> wms = List();
   String totalRemainingAmountWithCurrency = "";
 
   void _onAddTransaction() async {
-    bool result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
+    await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
   }
 
   void _onAddWallet(BuildContext context) async {
@@ -135,63 +123,11 @@ class _MyHomePageState extends State<MyHomePage> {
     ], color, Icon(Icons.add));
   }
 
-  // _read() async {
-  //   List<Model> transactionModels = await DatabaseHelper.instance
-  //       .queryAll(new TransactionModel(), reverse: true);
-  //   List<WalletModel> wms = new List();
-  //   for (TransactionModel m in transactionModels) {
-  //     WalletModel wm = await DatabaseHelper.instance
-  //         .query(m.walletId, new WalletModel()) as WalletModel;
-  //     wms.add(wm);
-  //   }
-
-  //   setState(() {
-  //     this.transactionModels = transactionModels;
-  //     this.wms = wms;
-  //   });
-
-  //   // List of models is returned here and now we need to convert
-  //   // it into list of widgets
-  //   List<Model> models =
-  //       await DatabaseHelper.instance.queryAll(new WalletModel());
-  //   List<Widget> walletsMore = [AddWalletWidgetClickable()];
-
-  //   double totalAmount = 0.0;
-  //   String curr;
-
-  //   if (models.length > 0) {
-  //     print('Lenght of Wallet models: ${models.length}');
-  //     models.forEach((mo) {
-  //       WalletModel w = mo as WalletModel;
-  //       walletsMore.add(WalletWidget(
-  //           w.name, w.initialAmount, CircularColorMap[w.color], w.currency));
-  //       totalAmount += w.initialAmount;
-  //       curr = w.currency;
-  //     });
-  //   }
-  //   setState(() {
-  //     wallets = walletsMore;
-  //     totalRemainingAmountWithCurrency = curr + " " + totalAmount.toString();
-  //   });
-  // }
 
   @override
   void initState() {
     super.initState();
-    // wallets = [AddWalletWidgetClickable()];
-    // _read();
   }
-
-  // handleTransactionDelete(TransactionModel tm, bool refund) async {
-  //   await DatabaseHelper.instance.delete(tm.getTableName(), tm, tm.getId());
-  //   if (refund) {
-  //     WalletModel wm =
-  //         await DatabaseHelper.instance.query(tm.walletId, new WalletModel());
-  //     wm.initialAmount = wm.initialAmount + tm.amount;
-  //     await DatabaseHelper.instance.update(wm.getTableName(), wm, wm.id);
-  //   }
-  //   _read();
-  // }
 
   void handleTransactionDelete(
       BuildContext context, TransactionWithWalletAndCategory transaction, bool refundPolicy) async {
@@ -201,11 +137,12 @@ class _MyHomePageState extends State<MyHomePage> {
     double walletAmount = transaction.wallet.initialAmount;
 
     if (refundPolicy) {
-      if (transactionType == 1) {
+      if (transactionType == 0) { // Add transaction type should be subtracted
         amount *= -1;
       }
+      print('Amount to refund is $amount and transaction type is $transactionType');
+      await database.updateWallet(transaction.wallet.copyWith(initialAmount: (walletAmount + amount).abs()));
     }
-    await database.updateWallet(transaction.wallet.copyWith(initialAmount: walletAmount + amount));
     await database.deleteTransaction(transaction.transaction);
   }
 
@@ -216,26 +153,13 @@ class _MyHomePageState extends State<MyHomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   child: Icon(Icons.add),
-      //   onPressed: () async {
-      //     bool result = await Navigator.push(context,
-      //         MaterialPageRoute(builder: (context) => AddTransactionPage()));
-      //     if (result) {
-      //       print('Dope');
-      //       // _read();
-      //     } else {
-      //       print('It was a fucking no');
-      //     }
-      //   },
-      // ),
       body: Builder(
         builder: (BuildContext context) {
           return Stack(
             children: [
               Column(
                 children: <Widget>[
-                  Container(margin: EdgeInsets.only(top: 5.0), height: 100, child: this._allWalletsBuilder(context)),
+                  Container(margin: EdgeInsets.only(top: 5.0), height: 100, child: this._watchAllWallets(context)),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(
@@ -275,7 +199,7 @@ class _MyHomePageState extends State<MyHomePage> {
                                 textAlign: TextAlign.left,
                                 style: TextStyle(fontSize: 20.0, color: Theme.of(context).primaryColorDark),
                               ),
-                              totalAmountWithCurrency(context)
+                              _watchAllWalletsForMoneyStatistics(context)
                             ],
                           ),
                         ),
@@ -309,18 +233,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(left: 8.0, right: 8.0, bottom: 8.0),
-                      child: _allTransactionsBuilder(context),
+                      child: _watchAllTransactionsBuilder(context),
                     ),
-                    // ListView.builder(
-                    //   itemCount: this.transactionModels.length,
-                    //   itemBuilder: (BuildContext context, int index) {
-                    //     return TransactionListItem(
-                    //         trm: this.transactionModels[index],
-                    //         wm: this.wms[index],
-                    //         onDelete: this.handleTransactionDelete);
-                    //   },
-                    // ),
-                    // // child: ListView(children: (this.transactionList == null || this.transactionList.length == 0) ? [Center(child: Text('Transactions will be shown here'))] : this.transactionList),
                   ),
                 ],
               ),
@@ -329,28 +243,6 @@ class _MyHomePageState extends State<MyHomePage> {
           );
         },
       ),
-    );
-  }
-
-  FutureBuilder _allTransactionsBuilder(BuildContext context) {
-    final database = Provider.of<AppDatabase>(context);
-    return FutureBuilder(
-      // initialData: [CircularProgressIndicator()],
-      future: database.getAllTransactions(),
-      builder: (context, snapshot) {
-        final transactions = snapshot.data ?? [];
-        print('Transactions length ${transactions.length}');
-        return ListView.builder(
-          itemCount: transactions.length,
-          itemBuilder: (_, index) {
-            final transaction = transactions[index];
-            return TransactionListItem(
-              transaction: transaction,
-              onDelete: (tr, refundPolicy) => handleTransactionDelete(context, tr, refundPolicy),
-            );
-          },
-        );
-      },
     );
   }
 
@@ -395,4 +287,89 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
   }
+
+  StreamBuilder _watchAllWallets(BuildContext context){
+    final database = Provider.of<AppDatabase>(context);
+    return StreamBuilder(
+      stream: database.watchAllWallets(),
+      builder: (context, snapshot) {
+        final wallets = snapshot.data ?? [];
+        print('Wallets length ${wallets.length}');
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: wallets.length,
+          itemBuilder: (_, index) {
+            final wallet = wallets[index];
+            return WalletWidget(wallet);
+          },
+        );
+      },
+    );
+  }
+
+  StreamBuilder _watchAllWalletsForMoneyStatistics(BuildContext context){
+    final database = Provider.of<AppDatabase>(context);
+    return StreamBuilder(
+      stream: database.watchAllWallets(),
+      builder: (context, snapshot) {
+        final List<Wallet> wallets = snapshot.data ?? [];
+        double amount = 0.0;
+        String currency = "";
+        wallets.forEach((w) {
+          amount += w.initialAmount;
+          currency = w.currency; // I know that's not scalable
+        });
+
+        return Text(
+          "$currency $amount",
+          textAlign: TextAlign.left,
+          style: TextStyle(fontSize: 25.0, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColorDark),
+        );
+      },
+    );
+  }
+
+  StreamBuilder _watchAllTransactionsBuilder(BuildContext context){
+    final database = Provider.of<AppDatabase>(context);
+    return StreamBuilder(
+      stream: database.watchAllTransactions(),
+      builder: (context, snapshot) {
+        final transactions = snapshot.data ?? [];
+        print('Transactions length ${transactions.length}');
+        return ListView.builder(
+          itemCount: transactions.length,
+          itemBuilder: (_, index) {
+            final transaction = transactions[index];
+            return TransactionListItem(
+              transaction: transaction,
+              onDelete: (tr, refundPolicy) => handleTransactionDelete(context, tr, refundPolicy),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  FutureBuilder _allTransactionsBuilder(BuildContext context) {
+    final database = Provider.of<AppDatabase>(context);
+    return FutureBuilder(
+      // initialData: [CircularProgressIndicator()],
+      future: database.getAllTransactions(),
+      builder: (context, snapshot) {
+        final transactions = snapshot.data ?? [];
+        print('Transactions length ${transactions.length}');
+        return ListView.builder(
+          itemCount: transactions.length,
+          itemBuilder: (_, index) {
+            final transaction = transactions[index];
+            return TransactionListItem(
+              transaction: transaction,
+              onDelete: (tr, refundPolicy) => handleTransactionDelete(context, tr, refundPolicy),
+            );
+          },
+        );
+      },
+    );
+  }
+
 }

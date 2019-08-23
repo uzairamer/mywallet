@@ -3,9 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../myWidgets/CircularColors.dart';
 import '../myWidgets/CircularColorDropdownItem.dart';
-// import '../myDatabase/myModels/WalletModel.dart';
 import '../moor/moor_database.dart';
-// import '../myDatabase/DatabaseHelper.dart';
 
 class AddWalletPage extends StatelessWidget {
   @override
@@ -32,8 +30,7 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
   String description;
   double initalAmount;
   String materialColorStr;
-  String currency =
-      'PKR'; // by default value because this dropdown is currently disabled
+  String currency = 'PKR'; // by default value because this dropdown is currently disabled
 
   @override
   Widget build(BuildContext context) {
@@ -84,13 +81,6 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
             },
           ),
 
-          // Center(
-          //   child: Padding(
-          //     padding: const EdgeInsets.only(top: 15.0, bottom: 15),
-          //     child: Text('Choose Wallet color'),
-          //   ),
-          // ),
-
           // Row of dropdowns
           Padding(
             padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
@@ -119,19 +109,16 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
                 ),
                 DropdownButton<String>(
                     onChanged: (value) {
-                      setState(() {
-                        this.currency = value;
-                      });
+                      setState(
+                        () {
+                          this.currency = value;
+                        },
+                      );
                     },
                     disabledHint: Text('PKR'),
                     hint: Text('Currency'),
                     value: this.currency,
-                    items: null
-                    // <DropdownMenuItem<String>>[
-                    //   DropdownMenuItem<String>(child: Text('PKR'), value: 'PKR',),
-                    // ],
-
-                    ),
+                    items: null),
               ],
             ),
           ),
@@ -151,17 +138,7 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
                   color: this.materialColorStr,
                   initialAmount: this.initalAmount,
                   deleted: false);
-              // WalletModel w = new WalletModel();
-              // w.name = this.name;
-              // w.description = this.description;
-              // w.currency = this.currency;
-              // w.color = this.materialColorStr;
-              // w.initialAmount = this.initalAmount;
-              // DatabaseHelper.instance.insert(w.getTableName(), w).then((onValue){
-              //   Navigator.of(context).pop(true);
-              // }).catchError((onError){
-              //   Navigator.of(context).pop(false);
-              // });
+
               database.insertWallet(wallet).then((onValue) {
                 Navigator.of(context).pop(true);
               }).catchError((onError) {
