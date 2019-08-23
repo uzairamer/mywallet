@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
 
-import '../myDatabase/myModels/TransactionModel.dart';
-import '../myDatabase/myModels/WalletModel.dart';
+import '../moor/moor_database.dart';
+import 'package:mywallet/Utils.dart';
 
 class TransactionDetailPage extends StatelessWidget {
-  final TransactionModel trm;
-  final String dateTimeStr;
-  final WalletModel wm;
-  TransactionDetailPage(this.trm, this.wm, this.dateTimeStr);
+  final TransactionWithWalletAndCategory transaction;
+
+  TransactionDetailPage(this.transaction);
 
   @override
   Widget build(BuildContext context) {
     Color textColor = Theme.of(context).primaryColorDark;
-    String addOrSpend = trm.transactionType == 0 ? '+' : '-';
+    final transaction = this.transaction.transaction;
+    final wallet = this.transaction.wallet;
 
     return Scaffold(
       appBar: AppBar(
@@ -30,14 +30,11 @@ class TransactionDetailPage extends StatelessWidget {
                   children: <Widget>[
                     Expanded(
                         child: Text(
-                      trm.title,
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18.0,
-                          color: textColor),
+                      transaction.title,
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0, color: textColor),
                     )),
                     Text(
-                      '$addOrSpend ${wm.currency} ${trm.amount.toString()}',
+                      '${transaction.transactionType == 1 ? "- " : ""}${wallet.currency} ${transaction.amount.toString()}',
                       style: TextStyle(fontSize: 18.0, color: textColor),
                     )
                   ],
@@ -49,12 +46,12 @@ class TransactionDetailPage extends StatelessWidget {
                     children: <Widget>[
                       Expanded(
                         child: Text(
-                          'Wallet Used: ${wm.name}',
+                          'Wallet Used: ${wallet.name}',
                           style: TextStyle(fontSize: 16.0, color: textColor),
                         ),
                       ),
                       Text(
-                        dateTimeStr,
+                        dateTime_yMedjm(transaction.datetime),
                         style: TextStyle(fontSize: 14.0, color: textColor),
                       )
                     ],
@@ -64,9 +61,17 @@ class TransactionDetailPage extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: RichText(
                     text: TextSpan(
-                        text: 'Description: ',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColorDark),
-                        children: <TextSpan>[TextSpan(text: trm.description, style: TextStyle(fontSize: 16, fontWeight: FontWeight.normal ,color: Theme.of(context).primaryColorDark),)]),
+                      text: 'Description: ',
+                      style: TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).primaryColorDark),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: transaction.description,
+                          style: TextStyle(
+                              fontSize: 16, fontWeight: FontWeight.normal, color: Theme.of(context).primaryColorDark),
+                        )
+                      ],
+                    ),
                   ),
                 )
               ],

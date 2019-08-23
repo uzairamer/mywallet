@@ -1,20 +1,9 @@
 import 'package:flutter/material.dart';
 
-import './CircularColors.dart';
-import '../myPages/AddWalletPage.dart';
-
 class AddWalletWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return
-        // InkWell(
-        //   onTap: () {
-        //     print('Add a new wallet');
-        //     Navigator.push(context, MaterialPageRoute(builder: (context) => AddWalletPage()));
-        //     // showDialog(context: context, builder: (_) => CircularColors());
-        //   },
-        //   child:
-        Padding(
+    return Padding(
       padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
       child: SizedBox(
         child: Container(
@@ -29,15 +18,16 @@ class AddWalletWidget extends StatelessWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.only(top: 3.0),
-                  child: Text('Add Wallet', style: TextStyle(color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold),),
+                  child: Text(
+                    'Add Wallet',
+                    style: TextStyle(color: Theme.of(context).primaryColorDark, fontWeight: FontWeight.bold),
+                  ),
                 )
               ],
             ),
           ),
           decoration: BoxDecoration(
-              // color: Colors.blueGrey[100],
-              border:
-                  Border.all(color: Theme.of(context).primaryColor, width: 2.0),
+              border: Border.all(color: Theme.of(context).primaryColor, width: 2.0),
               borderRadius: BorderRadius.all(Radius.circular(10.0))),
         ),
         width: 100,

@@ -1,45 +1,14 @@
-import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
+import 'package:mywallet/Utils.dart';
 
+import '../moor/moor_database.dart';
 import '../myPages/TransactionDetailPage.dart';
 
-import '../myDatabase/myModels/TransactionModel.dart';
-import '../myDatabase/myModels/WalletModel.dart';
-
 class TransactionListItem extends StatelessWidget {
-  final TransactionModel trm;
-  final WalletModel wm;
+  final TransactionWithWalletAndCategory transaction;
   final Function onDelete;
-  final List<String> monthNames = const [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December'
-  ];
 
-  const TransactionListItem({Key key, this.trm, this.wm, this.onDelete})
-      : super(key: key);
-
-  String dateTimeParser(String dateTimeStr) {
-    final formatter = DateFormat('yyyy-mm-dd hh:mm');
-    String timeStr = DateFormat().add_jm().format(formatter.parse(dateTimeStr));
-
-    List<String> dateSplit = dateTimeStr.split(' ');
-    List<String> date = dateSplit[0].split('-');
-    var dateOnly =
-        DateTime(int.parse(date[0]), int.parse(date[1]), int.parse(date[2]));
-    String result =
-        '${this.monthNames[dateOnly.month - 1]} ${dateOnly.day}, ${dateOnly.year} at $timeStr';
-    return result;
-  }
+  const TransactionListItem({Key key, this.transaction, this.onDelete}) : super(key: key);
 
   _dismissDialog(BuildContext context) {
     Navigator.pop(context);
@@ -48,20 +17,13 @@ class TransactionListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Color textColor = Theme.of(context).primaryColorDark;
-    String addOrSpend = trm.transactionType == 0 ? '+' : '-';
-    String dateTime = trm.dateTime == null
-        ? 'Date & Time NA'
-        : this.dateTimeParser(trm.dateTime);
+    Wallet wallet = this.transaction.wallet;
+    Transaction transaction = this.transaction.transaction;
+    String formattedDateTime = dateTime_yMedjm(transaction.datetime);
 
     return InkWell(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) =>
-                TransactionDetailPage(this.trm, this.wm, dateTime),
-          ),
-        );
+        Navigator.push(context, MaterialPageRoute(builder: (context) => TransactionDetailPage(this.transaction)));
       },
       onLongPress: () {
         showDialog(
@@ -73,14 +35,14 @@ class TransactionListItem extends StatelessWidget {
                   SimpleDialogOption(
                     child: Text('Delete & Refund to Wallet'),
                     onPressed: () {
-                      onDelete(trm, true); // refund = true
+                      onDelete(this.transaction, true); // refund = true
                       _dismissDialog(context);
                     },
                   ),
                   SimpleDialogOption(
                     child: Text('Delete & No Refund'),
                     onPressed: () {
-                      onDelete(trm, false); // refund = true
+                      onDelete(this.transaction, false); // refund = true
                       _dismissDialog(context);
                     },
                   ),
@@ -99,14 +61,11 @@ class TransactionListItem extends StatelessWidget {
                 children: <Widget>[
                   Expanded(
                       child: Text(
-                    trm.title,
-                    style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18.0,
-                        color: textColor),
+                    transaction.title,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18.0, color: textColor),
                   )),
                   Text(
-                    '$addOrSpend ${wm.currency} ${trm.amount.toString()}',
+                    '${transaction.transactionType == 1 ? "- " : ""}${wallet.currency} ${transaction.amount.toString()}',
                     style: TextStyle(fontSize: 18.0, color: textColor),
                   )
                 ],
@@ -118,12 +77,12 @@ class TransactionListItem extends StatelessWidget {
                   children: <Widget>[
                     Expanded(
                       child: Text(
-                        'Wallet Used: ${wm.name}',
+                        '${transaction.transactionType == 0 ? "To" : "From"} ${wallet.name}',
                         style: TextStyle(fontSize: 16.0, color: textColor),
                       ),
                     ),
                     Text(
-                      dateTime,
+                      formattedDateTime,
                       style: TextStyle(fontSize: 14.0, color: textColor),
                     )
                   ],
