@@ -33,7 +33,6 @@ class Wallets extends Table {
 
 @DataClassName('Category')
 class Categories extends Table {
-  // IntColumn get id => integer().autoIncrement()();
   TextColumn get name => text().withLength(min: 1, max: 32)();
   BoolColumn get deleted => boolean().withDefault(Constant(false))();
 
@@ -55,7 +54,6 @@ class AppDatabase extends _$AppDatabase {
   MigrationStrategy get migration => MigrationStrategy(
         beforeOpen: (db, details) async {
           await db.customStatement('PRAGMA foreign_keys = ON');
-          // await db.into(categories).insert(Category(deleted: false, name: 'Other'));
         },
       );
 

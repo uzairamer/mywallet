@@ -94,7 +94,17 @@ class _MyHomePageState extends State<MyHomePage> {
   String totalRemainingAmountWithCurrency = "";
 
   void _onAddTransaction() async {
-    await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
+    final result = await Navigator.push(context, MaterialPageRoute(builder: (context) => AddTransactionPage()));
+    String response = '';
+    if (result)
+      response = 'New Transaction has been added.';
+    else
+      response = 'There was an error while adding the Transaction.';
+    Flushbar(
+      message: response,
+      icon: result ? Icon(Icons.check, color: Colors.blue,) : Icon(Icons.error_outline, color: Colors.red,),
+      duration: Duration(seconds: 4),
+    )..show(context);
   }
 
   void _onAddWallet(BuildContext context) async {
@@ -110,7 +120,6 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: result ? Icon(Icons.check, color: Colors.blue,) : Icon(Icons.error_outline, color: Colors.red,),
       duration: Duration(seconds: 4),
     )..show(context);
-//    Alert.toast(context, response, position: ToastPosition.bottom, duration: ToastDuration.long);
   }
 
   void _onAddCategory() {}

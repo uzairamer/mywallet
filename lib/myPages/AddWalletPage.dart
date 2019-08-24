@@ -1,3 +1,4 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -32,8 +33,43 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
   String materialColorStr;
   String currency = 'PKR'; // by default value because this dropdown is currently disabled
 
-  bool validate(){
-    
+  validationFlushBar(BuildContext context, {@required title, @required message}) {
+    Flushbar(
+      title: title,
+      message: message,
+      duration: Duration(seconds: 4),
+      icon: Icon(
+        Icons.info_outline,
+        color: Colors.red,
+      ),
+      forwardAnimationCurve: Curves.elasticInOut,
+      reverseAnimationCurve: Curves.decelerate,
+    )..show(context);
+  }
+
+  bool validate() {
+    if (name == "" || name == null) {
+      validationFlushBar(context, title: 'Missing Name', message: 'Please choose a name for the wallet');
+      return false;
+    }
+
+    if (initalAmount == null) {
+      validationFlushBar(context,
+          title: 'Missing Amount', message: 'Please choose an amount to initialize the wallet. It can be 0 too.');
+      return false;
+    }
+
+    if (initalAmount < 0) {
+      validationFlushBar(context, title: 'Invalid Amount', message: 'Please choose a non-negative value');
+      return false;
+    }
+
+    if (materialColorStr == null || materialColorStr == "") {
+      validationFlushBar(context, title: 'Missing Color', message: 'Please choose a color');
+      return false;
+    }
+
+    return true;
   }
 
   @override
@@ -134,20 +170,21 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
               style: TextStyle(color: Colors.white),
             ),
             onPressed: () {
-              print('Going to add wallet');
-              Wallet wallet = Wallet(
-                  name: this.name,
-                  description: this.description,
-                  currency: this.currency,
-                  color: this.materialColorStr,
-                  initialAmount: this.initalAmount,
-                  deleted: false);
+              if (validate()) {
+                Wallet wallet = Wallet(
+                    name: this.name,
+                    description: this.description,
+                    currency: this.currency,
+                    color: this.materialColorStr,
+                    initialAmount: this.initalAmount,
+                    deleted: false);
 
-              database.insertWallet(wallet).then((onValue) {
-                Navigator.of(context).pop(true);
-              }).catchError((onError) {
-                Navigator.of(context).pop(false);
-              });
+                database.insertWallet(wallet).then((onValue) {
+                  Navigator.of(context).pop(true);
+                }).catchError((onError) {
+                  Navigator.of(context).pop(false);
+                });
+              }
             },
           ),
         ],
