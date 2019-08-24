@@ -1,3 +1,4 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:mywallet/Utils.dart';
@@ -26,7 +27,6 @@ class AddTransactionPageForm extends StatefulWidget {
 }
 
 class AddTransactionPageFormState extends State<AddTransactionPageForm> {
-
   int walletId;
   int spentOrAdd;
   double amount;
@@ -59,50 +59,49 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
     return null;
   }
 
+  validationFlushBar(BuildContext context, {@required title, @required message}){
+    Flushbar(
+      title: title,
+      message: message,
+      duration: Duration(seconds: 4),
+      icon: Icon(Icons.info_outline, color: Colors.red,),
+      forwardAnimationCurve: Curves.elasticInOut,
+      reverseAnimationCurve: Curves.decelerate,
+    )..show(context);
+  }
+
   bool validate() {
     if (this.walletName == null || this.walletName == "") {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Please choose a wallet"),
-      ));
+      validationFlushBar(context, title: "Missing Wallet Name", message: 'Please choose a wallet from the respective Dropdown');
       return false;
     }
 
     if (transactionType == null || transactionType == "") {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Please choose a Transaction Type"),
-      ));
+      validationFlushBar(context, title: "Missing Transaction Type", message: 'Please choose a Transaction Type from the respective Dropdown');
       return false;
     }
 
     if (title == "" || title == null) {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Please choose a Title"),
-      ));
+      validationFlushBar(context, title: 'Missing Title', message: 'Please choose a title for this Transaction');
       return false;
     }
 
     if (amount == null) {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Please choose an Amount"),
-      ));
+      validationFlushBar(context, title: 'Missing Amount', message: 'Please choose an amount for this Transaction');
       return false;
     }
     if (this.amount > this.currentChosenWallet.initialAmount && TransactionTypeMap[transactionType] == 1) {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Amount is greater than the amount available in wallet"),
-      ));
+      validationFlushBar(context, title: 'Invalid Amount', message: 'Amount cannot be greater than the amount available in Wallet');
       return false;
     }
 
     double amountTotal = this.amount + this.currentChosenWallet.initialAmount;
     if (amountTotal < this.amount || amountTotal < this.currentChosenWallet.initialAmount) {
-      Scaffold.of(context).showSnackBar(new SnackBar(
-        content: new Text("Overflowed. Please choose the Amount appropriately"),
-      ));
+      validationFlushBar(context, title: 'Invalid Amount', message: 'Amount oveflowed. Please choose a valid amount');
       return false;
     }
 
-    if (dateTime == null){
+    if (dateTime == null) {
       setState(() {
         dateTime = DateTime.now();
         dateTimeFormatted = dateTime_yMedjm(dateTime);
@@ -110,8 +109,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
     }
 
     return true;
-
-
   }
 
   @override
@@ -265,7 +262,8 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                   description: this.description ?? 'No Description was Provided',
                   transactionType: TransactionTypeMap[this.transactionType],
                   categoryName: 'Other',
-                  walletName: this.currentChosenWallet.name, id: null,
+                  walletName: this.currentChosenWallet.name,
+                  id: null,
                 );
                 if (TransactionTypeMap[transactionType] == 1) {
                   this.amount *= -1; // Spend Amount
@@ -279,11 +277,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
                     database.updateWallet(wallet).then((_) {
                       Navigator.of(context).pop(true);
                     }).catchError((_) async {
-                      Scaffold.of(context).showSnackBar(
-                        new SnackBar(
-                          content: new Text("There was some error in processing the wallet. Rolling back transaction"),
-                        ),
-                      );
+                      validationFlushBar(context, title: 'Encountered Error', message: 'There was some error in processing the wallet. Rolling back transaction');
                       await database.deleteTransaction(transaction);
                     });
                   },

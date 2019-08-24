@@ -1,8 +1,8 @@
+import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
-import 'package:easy_alert/easy_alert.dart';
 
 import './moor/moor_database.dart';
 import './myWidgets/WalletWidget.dart';
@@ -11,7 +11,7 @@ import './myWidgets/TransactionListItem.dart';
 import './myPages/AddWalletPage.dart';
 import './myPages/AddTransactionPage.dart';
 
-void main() => runApp(AlertProvider(child: MyApp()));
+void main() => runApp(MyApp());
 final String appName = "Auditor";
 
 class MyApp extends StatelessWidget {
@@ -105,7 +105,12 @@ class _MyHomePageState extends State<MyHomePage> {
       response = 'New Wallet has been added.';
     else
       response = 'There was an error while adding the Wallet. Perhaps you should check the name';
-    Alert.toast(context, response, position: ToastPosition.bottom, duration: ToastDuration.long);
+    Flushbar(
+      message: response,
+      icon: result ? Icon(Icons.check, color: Colors.blue,) : Icon(Icons.error_outline, color: Colors.red,),
+      duration: Duration(seconds: 4),
+    )..show(context);
+//    Alert.toast(context, response, position: ToastPosition.bottom, duration: ToastDuration.long);
   }
 
   void _onAddCategory() {}
