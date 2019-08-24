@@ -32,6 +32,10 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
   String materialColorStr;
   String currency = 'PKR'; // by default value because this dropdown is currently disabled
 
+  bool validate(){
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     final database = Provider.of<AppDatabase>(context);

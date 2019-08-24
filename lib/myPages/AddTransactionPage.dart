@@ -60,7 +60,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
   }
 
   bool validate() {
-    if (this.currentChosenWallet.name == null || this.currentChosenWallet.name == "") {
+    if (this.walletName == null || this.walletName == "") {
       Scaffold.of(context).showSnackBar(new SnackBar(
         content: new Text("Please choose a wallet"),
       ));
@@ -93,6 +93,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
       ));
       return false;
     }
+
     double amountTotal = this.amount + this.currentChosenWallet.initialAmount;
     if (amountTotal < this.amount || amountTotal < this.currentChosenWallet.initialAmount) {
       Scaffold.of(context).showSnackBar(new SnackBar(
@@ -100,7 +101,17 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
       ));
       return false;
     }
+
+    if (dateTime == null){
+      setState(() {
+        dateTime = DateTime.now();
+        dateTimeFormatted = dateTime_yMedjm(dateTime);
+      });
+    }
+
     return true;
+
+
   }
 
   @override
@@ -124,7 +135,6 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
               setState(() {
                 print(value);
                 this.currentChosenWallet = getWalletFromWalletName(value);
-                // this.walletId = this.currentChosenWallet.id;
                 this.walletName = value;
               });
             },
