@@ -173,7 +173,7 @@ class _MyHomePageState extends State<MyHomePage> {
             children: [
               Column(
                 children: <Widget>[
-                  Container(margin: EdgeInsets.only(top: 5.0), height: 100, child: this._watchAllWallets(context)),
+                  Container(margin: EdgeInsets.only(top: 5.0), height: 110, child: this._watchAllWallets(context)),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Row(

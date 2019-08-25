@@ -15,7 +15,6 @@ class WalletWidget extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        // print('${this.walletName} ${this.walletAmount}');
       },
       child: Padding(
         padding: const EdgeInsets.fromLTRB(8.0, 8.0, 4.0, 8.0),
@@ -56,8 +55,8 @@ class WalletWidget extends StatelessWidget {
                 borderRadius: BorderRadius.all(Radius.circular(10.0)),
                 border: Border.all(color: color[500], width: 2.0)),
           ),
-          width: 100,
-          height: 100,
+          width: 110,
+          height: 110,
         ),
       ),
     );
