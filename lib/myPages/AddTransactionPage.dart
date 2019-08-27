@@ -190,7 +190,7 @@ class AddTransactionPageFormState extends State<AddTransactionPageForm> {
           ),
 
           TextField(
-            maxLength: 8,
+            maxLength: 10,
             maxLengthEnforced: true,
             keyboardType: TextInputType.number,
             textCapitalization: TextCapitalization.words,
