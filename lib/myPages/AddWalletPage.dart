@@ -80,7 +80,7 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
       child: ListView(
         children: <Widget>[
           TextField(
-            maxLength: 9,
+            maxLength: 15,
             maxLengthEnforced: true,
             textCapitalization: TextCapitalization.words,
             decoration: InputDecoration(
@@ -108,7 +108,7 @@ class AddWalletFormWidgetState extends State<AddWalletFormWidget> {
           ),
 
           TextField(
-            maxLength: 8,
+            maxLength: 10,
             maxLengthEnforced: true,
             keyboardType: TextInputType.number,
             decoration: InputDecoration(

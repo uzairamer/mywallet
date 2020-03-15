@@ -1,6 +1,8 @@
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_fab_dialer/flutter_fab_dialer.dart';
+import 'package:mywallet/myWidgets/VibrantWalletWidget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:provider/provider.dart';
 
@@ -23,6 +25,7 @@ class MyApp extends StatelessWidget {
         title: appName,
         theme: ThemeData(
           primarySwatch: Colors.blueGrey,
+          fontFamily: 'Montserrat',
         ),
         home: SplashScreenApp(),
       ),
@@ -141,6 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
+    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+        statusBarColor: Colors.blueGrey[700]
+    ));
   }
 
   void handleTransactionDelete(
@@ -165,7 +171,8 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Center(child: Text(widget.title),),
+        backgroundColor: Colors.blueGrey[700],
       ),
       body: Builder(
         builder: (BuildContext context) {
@@ -314,7 +321,7 @@ class _MyHomePageState extends State<MyHomePage> {
           itemCount: wallets.length,
           itemBuilder: (_, index) {
             final wallet = wallets[index];
-            return WalletWidget(wallet);
+            return VibrantWalletWidget(wallet: wallet);
           },
         );
       },
