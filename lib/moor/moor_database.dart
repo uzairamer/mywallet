@@ -139,4 +139,4 @@ class TransactionWithWalletAndCategory {
       {@required this.transaction,
       @required this.wallet,
       @required this.category});
-}
+} 
